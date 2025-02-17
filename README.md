@@ -11,16 +11,23 @@ Resources:
 
 ## SOLID Principles
 
-### **Concurrency**
-- **Definition**:  
-  Concurrency refers to the ability of a system to manage multiple tasks (processes or threads) at the same time, giving the illusion of simultaneous execution. However, these tasks might not actually be executing at the same moment. Instead, the CPU switches between tasks rapidly (context switching).
+These principles are basically designed for writing classes and objects in OOPs programming.
 
-- **Analogy**:  
-  Think of a single chef preparing multiple dishes by switching between tasks like chopping vegetables, boiling water, and stirring a pot.
+**Single Responsibility**:  
+  A class should have ony one responsibility.
 
-- **Example**:  
-  If two threads share a single-core CPU, only one thread executes at any moment, but the OS schedules them in a way that they appear to run concurrently.
+**Open Closed**:  
+ A class should be open for extension but for not modifications.
 
+**Lisakov Principle**:  
+  If a class has been derived from some parent class then the object of parent class can be assigned to the child object.
+
+**Interface segregation**:  
+  No force on any class to implement anything which is not required but have to implemented because of the deriving interface/class.
+
+**Dependency Inversion**:  
+  Instead of overriding the method of parent its better to declare a interface and let parent and child class inherit from that repsective interface.
+  
 ---
 
 ### **Parallelism**
