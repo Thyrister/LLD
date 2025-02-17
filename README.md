@@ -37,13 +37,14 @@ These principles are basically designed for writing classes and objects in OOPs 
   3. Abstract Factory - The Abstract Factory Pattern is an extension of the Factory Method Pattern, used when we need to create families of related objects without specifying their exact classes.
   4. Builder - The Builder Pattern is a Creational Design Pattern used to construct complex objects step by step. Instead of using a long constructor with multiple parameters, it provides a flexible way to build objects.
   5. Prototype - The Prototype Pattern is a Creational Design Pattern used to create new objects by copying an existing object (cloning) instead of building from scratch.
-  6. 
+ 
+- **Structural Patterns**:  
+  1. Adapter - The Adapter Pattern is a Structural Design Pattern that allows incompatible interfaces to work together by acting as a bridge between them. Think of an electric adapter that lets a European plug work in an Indian socket—it converts one interface to another.
+  2. Bridge - The Bridge Pattern is a Structural Design Pattern that decouples abstraction from implementation, allowing them to evolve independently. It helps avoid the explosion of subclasses when combining multiple variations of a class.
+  3. 
 
-- **Analogy**:  
-  Think of multiple chefs, each preparing their own dish simultaneously in a kitchen.
-
-- **Example**:  
-  On a multi-core CPU, two threads can run on separate cores at the same time, genuinely executing in parallel.
 
 ---
+
+
 
