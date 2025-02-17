@@ -4,7 +4,7 @@ Low Level Design
 Resources:
 
 ### 1. [Watch the video on YouTube](https://www.youtube.com/watch?v=Fn0xBsmact4&list=PLvv0ScY6vfd_ocTP2ZLicgqKnvq50OCXM)
-### 2. [Github.com](https://github.com/methylDragon/coding-notes/blob/master/C++)
+### 2. [Github.com](https://github.com/ashishps1/awesome-low-level-design?tab=readme-ov-file)
 
 ### 3. [Medium.com Must Read](https://medium.com/@yc-kuo)
 ---
@@ -30,9 +30,14 @@ These principles are basically designed for writing classes and objects in OOPs 
   
 ---
 
-### **Parallelism**
-- **Definition**:  
-  Parallelism involves executing multiple tasks simultaneously on multiple processors or cores. Each task runs on its own processor without interference from others.
+### **Design Patterns**
+- **Creational Patterns**:  
+  1. Singleton - A design where the only single object of class is required. (ex- db pools, logg aggregator, etc)
+  2. Factory - The Factory Method Pattern is a Creational Design Pattern that provides an interface for creating objects without specifying their concrete classes. So its kind of wrapper class to create the objects of another classes.
+  3. Abstract Factory - The Abstract Factory Pattern is an extension of the Factory Method Pattern, used when we need to create families of related objects without specifying their exact classes.
+  4. Builder - The Builder Pattern is a Creational Design Pattern used to construct complex objects step by step. Instead of using a long constructor with multiple parameters, it provides a flexible way to build objects.
+  5. Prototype - The Prototype Pattern is a Creational Design Pattern used to create new objects by copying an existing object (cloning) instead of building from scratch.
+  6. 
 
 - **Analogy**:  
   Think of multiple chefs, each preparing their own dish simultaneously in a kitchen.
