@@ -9,7 +9,7 @@ Resources:
 ### 3. [Medium.com Must Read](https://medium.com/@yc-kuo)
 ---
 
-## Difference between Concurrency (Multiprogramming) and Parallelism (Multiprocessing)
+## SOLID Principles
 
 ### **Concurrency**
 - **Definition**:  
