@@ -41,10 +41,133 @@ These principles are basically designed for writing classes and objects in OOPs 
 - **Structural Patterns**:  
   1. Adapter - The Adapter Pattern is a Structural Design Pattern that allows incompatible interfaces to work together by acting as a bridge between them. Think of an electric adapter that lets a European plug work in an Indian socket—it converts one interface to another.
   2. Bridge - The Bridge Pattern is a Structural Design Pattern that decouples abstraction from implementation, allowing them to evolve independently. It helps avoid the explosion of subclasses when combining multiple variations of a class.
-  3. 
-
 
 ---
+
+
+## Logging System
+
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+// ---------------- Writers (Strategies) ----------------
+class OutputWriter {
+public:
+    virtual void write(const string& msg) = 0;
+    virtual ~OutputWriter() {}
+};
+
+class ConsoleWriter : public OutputWriter {
+public:
+    void write(const string& msg) override {
+        cout << "[Console] " << msg << endl;
+    }
+};
+
+class FileWriter : public OutputWriter {
+public:
+    void write(const string& msg) override {
+        cout << "[File] " << msg << endl;  // Simulated write
+    }
+};
+
+class AlertWriter : public OutputWriter {
+public:
+    void write(const string& msg) override {
+        cout << "[ALERT] " << msg << endl;
+    }
+};
+
+// ---------------- Logger Chain (CoR) ----------------
+enum LogLevel { INFO, WARNING, ERROR };
+
+class Logger {
+protected:
+    Logger* next;
+    vector<OutputWriter*> writers;
+
+public:
+    Logger(Logger* n = nullptr) : next(n) {}
+
+    void addWriter(OutputWriter* writer) {
+        writers.push_back(writer);
+    }
+
+    virtual void log(const string& msg, LogLevel level) {
+        if (next) next->log(msg, level);
+    }
+
+    virtual ~Logger() {
+        for (auto w : writers) delete w;
+        delete next;
+    }
+};
+
+class InfoLogger : public Logger {
+public:
+    InfoLogger(Logger* n = nullptr) : Logger(n) {}
+
+    void log(const string& msg, LogLevel level) override {
+        if (level == INFO) {
+            for (auto writer : writers) writer->write("[INFO] " + msg);
+        }
+        Logger::log(msg, level);
+    }
+};
+
+class WarningLogger : public Logger {
+public:
+    WarningLogger(Logger* n = nullptr) : Logger(n) {}
+
+    void log(const string& msg, LogLevel level) override {
+        if (level == WARNING) {
+            for (auto writer : writers) writer->write("[WARNING] " + msg);
+        }
+        Logger::log(msg, level);
+    }
+};
+
+class ErrorLogger : public Logger {
+public:
+    ErrorLogger(Logger* n = nullptr) : Logger(n) {}
+
+    void log(const string& msg, LogLevel level) override {
+        if (level == ERROR) {
+            for (auto writer : writers) writer->write("[ERROR] " + msg);
+        }
+        Logger::log(msg, level);
+    }
+};
+
+// ---------------- Client Code ----------------
+int main() {
+    Logger* loggerChain =
+        new InfoLogger(
+            new WarningLogger(
+                new ErrorLogger()
+            )
+        );
+
+    // Attach writers
+    dynamic_cast<InfoLogger*>(loggerChain)->addWriter(new ConsoleWriter());
+    dynamic_cast<WarningLogger*>(loggerChain->next)->addWriter(new ConsoleWriter());
+    dynamic_cast<WarningLogger*>(loggerChain->next)->addWriter(new FileWriter());
+    dynamic_cast<ErrorLogger*>(loggerChain->next->next)->addWriter(new FileWriter());
+    dynamic_cast<ErrorLogger*>(loggerChain->next->next)->addWriter(new AlertWriter());
+
+    loggerChain->log("Everything is running fine", INFO);
+    loggerChain->log("Disk usage at 90%", WARNING);
+    loggerChain->log("Disk failure detected", ERROR);
+
+    delete loggerChain;
+    return 0;
+}
+
+  
+---
+
 
 
 
