@@ -382,7 +382,7 @@ int main() {
 
 ---
 
-## Coffee Machine - Decorator Pattern
+## Parking System
 ```cpp
 
 #include <iostream>
