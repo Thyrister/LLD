@@ -380,5 +380,221 @@ int main() {
 ```
 ---
 
+---
 
+## Coffee Machine - Decorator Pattern
+```cpp
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <ctime>
+
+using namespace std;
+
+// VEHICLE CLASSES
+class Vehicle {
+protected:
+    string plate;
+public:
+    Vehicle(string p) : plate(p) {}
+    virtual string getType() = 0;
+    string getPlate() { return plate; }
+};
+
+class Car : public Vehicle {
+public:
+    Car(string p) : Vehicle(p) {}
+    string getType() override { return "Car"; }
+};
+
+class Bike : public Vehicle {
+public:
+    Bike(string p) : Vehicle(p) {}
+    string getType() override { return "Bike"; }
+};
+
+class Truck : public Vehicle {
+public:
+    Truck(string p) : Vehicle(p) {}
+    string getType() override { return "Truck"; }
+};
+
+// PARKING SPOT
+class ParkingSpot {
+protected:
+    string id;
+    bool isFree;
+    Vehicle* parkedVehicle;
+public:
+    ParkingSpot(string id) : id(id), isFree(true), parkedVehicle(nullptr) {}
+    virtual string getType() = 0;
+    bool parkVehicle(Vehicle* v) {
+        if (isFree) {
+            parkedVehicle = v;
+            isFree = false;
+            return true;
+        }
+        return false;
+    }
+    void removeVehicle() {
+        parkedVehicle = nullptr;
+        isFree = true;
+    }
+    bool isAvailable() { return isFree; }
+    string getId() { return id; }
+};
+
+class SmallSpot : public ParkingSpot {
+public:
+    SmallSpot(string id) : ParkingSpot(id) {}
+    string getType() override { return "Small"; }
+};
+
+class MediumSpot : public ParkingSpot {
+public:
+    MediumSpot(string id) : ParkingSpot(id) {}
+    string getType() override { return "Medium"; }
+};
+
+class LargeSpot : public ParkingSpot {
+public:
+    LargeSpot(string id) : ParkingSpot(id) {}
+    string getType() override { return "Large"; }
+};
+
+// STRATEGY: Pricing
+class PricingStrategy {
+public:
+    virtual double calculateFee(time_t start, time_t end) = 0;
+};
+
+class HourlyPricing : public PricingStrategy {
+public:
+    double calculateFee(time_t start, time_t end) override {
+        double hours = difftime(end, start) / 3600;
+        return 10.0 * (int)(hours + 1); // ₹10/hour
+    }
+};
+
+// TICKET
+class Ticket {
+    Vehicle* vehicle;
+    ParkingSpot* spot;
+    time_t entryTime;
+public:
+    Ticket(Vehicle* v, ParkingSpot* s) : vehicle(v), spot(s), entryTime(time(nullptr)) {}
+    time_t getEntryTime() { return entryTime; }
+    Vehicle* getVehicle() { return vehicle; }
+    ParkingSpot* getSpot() { return spot; }
+};
+
+// FLOOR
+class ParkingFloor {
+    string name;
+    vector<ParkingSpot*> spots;
+public:
+    ParkingFloor(string n) : name(n) {}
+    void addSpot(ParkingSpot* s) {
+        spots.push_back(s);
+    }
+    ParkingSpot* findAvailableSpot(string vehicleType) {
+        for (auto s : spots) {
+            if (s->isAvailable()) {
+                if ((vehicleType == "Bike" && s->getType() == "Small") ||
+                    (vehicleType == "Car" && s->getType() == "Medium") ||
+                    (vehicleType == "Truck" && s->getType() == "Large")) {
+                    return s;
+                }
+            }
+        }
+        return nullptr;
+    }
+};
+
+// SINGLETON PARKING LOT
+class ParkingLot {
+    static ParkingLot* instance;
+    vector<ParkingFloor*> floors;
+    map<string, Ticket*> activeTickets;
+    PricingStrategy* pricing;
+
+    ParkingLot() { pricing = new HourlyPricing(); }
+
+public:
+    static ParkingLot* getInstance() {
+        if (!instance) instance = new ParkingLot();
+        return instance;
+    }
+
+    void addFloor(ParkingFloor* f) { floors.push_back(f); }
+
+    Ticket* parkVehicle(Vehicle* v) {
+        for (auto floor : floors) {
+            ParkingSpot* spot = floor->findAvailableSpot(v->getType());
+            if (spot) {
+                if (spot->parkVehicle(v)) {
+                    Ticket* t = new Ticket(v, spot);
+                    activeTickets[v->getPlate()] = t;
+                    cout << "Vehicle parked at spot " << spot->getId() << endl;
+                    return t;
+                }
+            }
+        }
+        cout << "No spot available!" << endl;
+        return nullptr;
+    }
+
+    void unparkVehicle(string plate) {
+        if (activeTickets.find(plate) == activeTickets.end()) {
+            cout << "Vehicle not found!" << endl;
+            return;
+        }
+
+        Ticket* t = activeTickets[plate];
+        time_t exitTime = time(nullptr);
+        double fee = pricing->calculateFee(t->getEntryTime(), exitTime);
+
+        t->getSpot()->removeVehicle();
+        cout << "Vehicle " << plate << " unparked. Fee: ₹" << fee << endl;
+
+        delete t;
+        activeTickets.erase(plate);
+    }
+
+    ~ParkingLot() {
+        for (auto f : floors) delete f;
+        delete pricing;
+    }
+};
+
+ParkingLot* ParkingLot::instance = nullptr;
+
+// DEMO
+int main() {
+    ParkingLot* lot = ParkingLot::getInstance();
+
+    ParkingFloor* floor1 = new ParkingFloor("Floor 1");
+    floor1->addSpot(new SmallSpot("S1"));
+    floor1->addSpot(new MediumSpot("M1"));
+    floor1->addSpot(new LargeSpot("L1"));
+
+    lot->addFloor(floor1);
+
+    Vehicle* car = new Car("MH-12-XY-1234");
+    Ticket* t = lot->parkVehicle(car);
+
+    // Simulate time pass
+    sleep(2);
+
+    lot->unparkVehicle(car->getPlate());
+
+    delete car;
+    return 0;
+}
+
+
+```
+---
 
