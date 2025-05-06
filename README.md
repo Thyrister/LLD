@@ -167,7 +167,9 @@ int main() {
 }
 
 ```
+---
 
+---
 
 ## Observer Pattern
 ```cpp
