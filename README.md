@@ -276,6 +276,109 @@ int main() {
 ```
 ---
 
+---
+
+## Coffee Machine - Decorator Pattern
+```cpp
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// Abstract Component
+class Coffee {
+public:
+    virtual string getDescription() = 0;
+    virtual double cost() = 0;
+    virtual ~Coffee() {}
+};
+
+// Concrete Component
+class BasicCoffee : public Coffee {
+public:
+    string getDescription() override {
+        return "Basic Coffee";
+    }
+
+    double cost() override {
+        return 5.0;
+    }
+};
+
+// Abstract Decorator
+class CoffeeDecorator : public Coffee {
+protected:
+    Coffee* coffee;
+
+public:
+    CoffeeDecorator(Coffee* c) : coffee(c) {}
+    virtual ~CoffeeDecorator() {
+        delete coffee; // Cleanup the wrapped component
+    }
+};
+
+// Concrete Decorators
+class Milk : public CoffeeDecorator {
+public:
+    Milk(Coffee* c) : CoffeeDecorator(c) {}
+
+    string getDescription() override {
+        return coffee->getDescription() + ", Milk";
+    }
+
+    double cost() override {
+        return coffee->cost() + 1.5;
+    }
+};
+
+class Sugar : public CoffeeDecorator {
+public:
+    Sugar(Coffee* c) : CoffeeDecorator(c) {}
+
+    string getDescription() override {
+        return coffee->getDescription() + ", Sugar";
+    }
+
+    double cost() override {
+        return coffee->cost() + 0.5;
+    }
+};
+
+class Chocolate : public CoffeeDecorator {
+public:
+    Chocolate(Coffee* c) : CoffeeDecorator(c) {}
+
+    string getDescription() override {
+        return coffee->getDescription() + ", Chocolate";
+    }
+
+    double cost() override {
+        return coffee->cost() + 2.0;
+    }
+};
+
+// Usage
+int main() {
+    // Base coffee
+    Coffee* myCoffee = new BasicCoffee();
+
+    // Add decorators (ingredients)
+    myCoffee = new Milk(myCoffee);
+    myCoffee = new Sugar(myCoffee);
+    myCoffee = new Chocolate(myCoffee);
+
+    cout << "Order: " << myCoffee->getDescription() << endl;
+    cout << "Total Cost: $" << myCoffee->cost() << endl;
+
+    // Cleanup all dynamically allocated memory
+    delete myCoffee;
+
+    return 0;
+}
+
+```
+---
 
 
 
