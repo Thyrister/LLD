@@ -598,3 +598,188 @@ int main() {
 ```
 ---
 
+
+---
+
+## Chess Game
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+class Board;
+class Block;
+
+class Piece {
+protected:
+    bool white;
+    bool killed;
+public:
+    Piece(bool white) : white(white), killed(false) {}
+    virtual ~Piece() {}
+    bool isWhite() const { return white; }
+    bool isKilled() const { return killed; }
+    void setKilled(bool k) { killed = k; }
+    virtual bool canMove(Board* board, Block* start, Block* end) = 0;
+};
+
+class Block {
+    int x, y;
+    string label;
+    Piece* piece;
+    string assignLabel(int x, int y) {
+        string xLabels[] = {"1","2","3","4","5","6","7","8"};
+        string yLabels[] = {"A","B","C","D","E","F","G","H"};
+        return xLabels[x] + yLabels[y];
+    }
+public:
+    Block(int x, int y, Piece* piece) : x(x), y(y), piece(piece) {
+        label = assignLabel(x, y);
+    }
+    Piece* getPiece() { return piece; }
+    void setPiece(Piece* p) { piece = p; }
+};
+
+class Rook : public Piece {
+public:
+    Rook(bool white) : Piece(white) {}
+    bool canMove(Board*, Block*, Block*) override { return false; }
+};
+
+class Knight : public Piece {
+public:
+    Knight(bool white) : Piece(white) {}
+    bool canMove(Board*, Block*, Block*) override { return false; }
+};
+
+class Bishop : public Piece {
+public:
+    Bishop(bool white) : Piece(white) {}
+    bool canMove(Board*, Block*, Block*) override { return false; }
+};
+
+class Queen : public Piece {
+public:
+    Queen(bool white) : Piece(white) {}
+    bool canMove(Board*, Block*, Block*) override { return false; }
+};
+
+class King : public Piece {
+public:
+    King(bool white) : Piece(white) {}
+    bool canMove(Board*, Block*, Block*) override { return false; }
+};
+
+class Pawn : public Piece {
+public:
+    Pawn(bool white) : Piece(white) {}
+    bool canMove(Board*, Block*, Block*) override { return false; }
+};
+
+class Board {
+    Block* blocks[8][8];
+public:
+    Board() {
+        initializeBoard();
+    }
+
+    void initializeBoard() {
+        // Set up white pieces
+        blocks[0][0] = new Block(0, 0, new Rook(true));
+        blocks[0][1] = new Block(0, 1, new Knight(true));
+        blocks[0][2] = new Block(0, 2, new Bishop(true));
+        blocks[0][3] = new Block(0, 3, new Queen(true));
+        blocks[0][4] = new Block(0, 4, new King(true));
+        blocks[0][5] = new Block(0, 5, new Bishop(true));
+        blocks[0][6] = new Block(0, 6, new Knight(true));
+        blocks[0][7] = new Block(0, 7, new Rook(true));
+        for (int j = 0; j < 8; j++)
+            blocks[1][j] = new Block(1, j, new Pawn(true));
+
+        // Set up black pieces
+        blocks[7][0] = new Block(7, 0, new Rook(false));
+        blocks[7][1] = new Block(7, 1, new Knight(false));
+        blocks[7][2] = new Block(7, 2, new Bishop(false));
+        blocks[7][3] = new Block(7, 3, new Queen(false));
+        blocks[7][4] = new Block(7, 4, new King(false));
+        blocks[7][5] = new Block(7, 5, new Bishop(false));
+        blocks[7][6] = new Block(7, 6, new Knight(false));
+        blocks[7][7] = new Block(7, 7, new Rook(false));
+        for (int j = 0; j < 8; j++)
+            blocks[6][j] = new Block(6, j, new Pawn(false));
+
+        // Empty blocks
+        for (int i = 2; i <= 5; i++) {
+            for (int j = 0; j < 8; j++) {
+                blocks[i][j] = new Block(i, j, nullptr);
+            }
+        }
+    }
+
+    Block* getBlock(int x, int y) {
+        return blocks[x][y];
+    }
+};
+
+class Move {
+    Block* start;
+    Block* end;
+public:
+    Move(Block* start, Block* end) : start(start), end(end) {}
+    bool isValid() {
+        return !(start->getPiece()->isWhite() == end->getPiece()->isWhite());
+    }
+    Block* getStart() { return start; }
+    Block* getEnd() { return end; }
+};
+
+enum class Status {
+    ACTIVE, SAVED, BLACK_WIN, WHITE_WIN, STALEMATE
+};
+
+class Player {
+    string name;
+public:
+    Player(string name) : name(name) {}
+};
+
+class Game {
+    Board* board;
+    Player* player1;
+    Player* player2;
+    bool isWhiteTurn;
+    vector<Move*> gameLog;
+    Status status;
+
+public:
+    Game(Player* p1, Player* p2) : player1(p1), player2(p2), isWhiteTurn(true), status(Status::ACTIVE) {
+        board = new Board();
+    }
+
+    void makeMove(Move* move) {
+        if (move->isValid()) {
+            Piece* source = move->getStart()->getPiece();
+            if (source->canMove(board, move->getStart(), move->getEnd())) {
+                Piece* dest = move->getEnd()->getPiece();
+                if (dest != nullptr) {
+                    if (dynamic_cast<King*>(dest)) {
+                        status = isWhiteTurn ? Status::WHITE_WIN : Status::BLACK_WIN;
+                        return;
+                    }
+                    dest->setKilled(true);
+                }
+                move->getEnd()->setPiece(source);
+                move->getStart()->setPiece(nullptr);
+                gameLog.push_back(move);
+                isWhiteTurn = !isWhiteTurn;
+            }
+        }
+    }
+};
+
+
+
+```
+---
+
