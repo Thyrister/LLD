@@ -783,3 +783,102 @@ public:
 ```
 ---
 
+---
+
+## Design FileSystem - Composite Pattern
+```cpp
+
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// Component
+class FileSystemEntity {
+public:
+    virtual void showStructure(int depth = 0) const = 0;
+    virtual int getSize() const = 0;
+    virtual ~FileSystemEntity() {}
+};
+
+// Leaf
+class File : public FileSystemEntity {
+    string name;
+    int size; // in bytes
+public:
+    File(const string& name, int size) : name(name), size(size) {}
+
+    void showStructure(int depth = 0) const override {
+        cout << string(depth * 2, ' ') << "- File: " << name << " (" << size << " bytes)" << endl;
+    }
+
+    int getSize() const override {
+        return size;
+    }
+};
+
+// Composite
+class Directory : public FileSystemEntity {
+    string name;
+    vector<FileSystemEntity*> children;
+public:
+    Directory(const string& name) : name(name) {}
+
+    void add(FileSystemEntity* entity) {
+        children.push_back(entity);
+    }
+
+    void remove(FileSystemEntity* entity) {
+        children.erase(remove(children.begin(), children.end(), entity), children.end());
+    }
+
+    void showStructure(int depth = 0) const override {
+        cout << string(depth * 2, ' ') << "+ Directory: " << name << endl;
+        for (auto child : children) {
+            child->showStructure(depth + 1);
+        }
+    }
+
+    int getSize() const override {
+        int total = 0;
+        for (auto child : children) {
+            total += child->getSize();
+        }
+        return total;
+    }
+
+    ~Directory() {
+        for (auto child : children) {
+            delete child;
+        }
+    }
+};
+
+// Main
+int main() {
+    Directory* root = new Directory("root");
+    Directory* home = new Directory("home");
+    Directory* user = new Directory("user");
+
+    File* file1 = new File("readme.txt", 1200);
+    File* file2 = new File("photo.jpg", 5500);
+    File* file3 = new File("resume.pdf", 300);
+
+    user->add(file3);
+    home->add(file1);
+    home->add(file2);
+    home->add(user);
+    root->add(home);
+
+    root->showStructure();
+    cout << "\nTotal size of filesystem: " << root->getSize() << " bytes" << endl;
+
+    delete root;  // cleans up all children
+
+    return 0;
+}
+
+
+```
+---
