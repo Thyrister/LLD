@@ -882,3 +882,163 @@ int main() {
 
 ```
 ---
+
+
+
+---
+```
+## Multi-Layered Cache
+
+#include <iostream>
+#include <unordered_map>
+#include <list>
+#include <string>
+#include <vector>
+using namespace std;
+
+// Base Cache interface (Handler in the Chain of Responsibility pattern)
+class Cache {
+protected:
+    Cache* nextCacheLayer;  // Reference to the next handler in the chain
+
+public:
+    virtual string get(const string& key) = 0;
+    virtual void put(const string& key, const string& value) = 0;
+    virtual bool contains(const string& key) = 0;
+
+    // Set next cache layer in the chain
+    void setNextCacheLayer(Cache* nextLayer) {
+        nextCacheLayer = nextLayer;
+    }
+
+    // Pass the request to the next layer if not handled
+    string passToNextLayer(const string& key) {
+        if (nextCacheLayer != nullptr) {
+            return nextCacheLayer->get(key);
+        }
+        return "";  // If no next layer exists, return empty
+    }
+};
+
+// LRU Cache implementation (for in-memory cache)
+class LRUCache : public Cache {
+private:
+    int capacity;
+    unordered_map<string, list<pair<string, string>>::iterator> cacheMap;
+    list<pair<string, string>> cacheList;
+
+public:
+    LRUCache(int capacity) : capacity(capacity) {}
+
+    string get(const string& key) override {
+        if (contains(key)) {
+            auto it = cacheMap[key];
+            cacheList.splice(cacheList.begin(), cacheList, it);
+            return it->second;
+        }
+        return passToNextLayer(key);  // Pass to next cache layer if not found
+    }
+
+    void put(const string& key, const string& value) override {
+        if (contains(key)) {
+            auto it = cacheMap[key];
+            it->second = value;
+            cacheList.splice(cacheList.begin(), cacheList, it);
+        } else {
+            if (cacheList.size() >= capacity) {
+                cacheMap.erase(cacheList.back().first);
+                cacheList.pop_back();
+            }
+            cacheList.push_front({key, value});
+            cacheMap[key] = cacheList.begin();
+        }
+    }
+
+    bool contains(const string& key) override {
+        return cacheMap.find(key) != cacheMap.end();
+    }
+};
+
+// FIFO Cache implementation (for example, another strategy)
+class FIFOCache : public Cache {
+private:
+    int capacity;
+    unordered_map<string, string> cache;
+
+public:
+    FIFOCache(int capacity) : capacity(capacity) {}
+
+    string get(const string& key) override {
+        if (contains(key)) {
+            return cache[key];
+        }
+        return passToNextLayer(key);  // Pass to next cache layer if not found
+    }
+
+    void put(const string& key, const string& value) override {
+        if (cache.size() >= capacity) {
+            // Evict first element (FIFO)
+            cache.erase(cache.begin());
+        }
+        cache[key] = value;
+    }
+
+    bool contains(const string& key) override {
+        return cache.find(key) != cache.end();
+    }
+};
+
+// Cache Manager class coordinating the multiple cache layers
+class CacheManager {
+private:
+    Cache* firstCacheLayer;
+
+public:
+    CacheManager() {
+        // Setup multiple layers of caches with different strategies
+        Cache* lruCache = new LRUCache(3);   // Level 1: LRU Cache
+        Cache* fifoCache = new FIFOCache(5);  // Level 2: FIFO Cache
+
+        // Chain of Responsibility: LRUCache -> FIFOCache
+        lruCache->setNextCacheLayer(fifoCache);
+
+        firstCacheLayer = lruCache;
+    }
+
+    string get(const string& key) {
+        return firstCacheLayer->get(key);  // Request goes through the cache layers
+    }
+
+    void put(const string& key, const string& value) {
+        firstCacheLayer->put(key, value);  // Propagate put request through layers
+    }
+
+    bool contains(const string& key) {
+        return firstCacheLayer->contains(key);
+    }
+};
+
+int main() {
+    CacheManager cacheManager;
+    
+    // Add items to the cache
+    cacheManager.put("key1", "value1");
+    cacheManager.put("key2", "value2");
+    cacheManager.put("key3", "value3");
+
+    // Retrieve items from the cache
+    cout << "Get key1: " << cacheManager.get("key1") << endl;  // Should be found in LRU cache
+    cout << "Get key2: " << cacheManager.get("key2") << endl;  // Should be found in LRU cache
+    cout << "Get key3: " << cacheManager.get("key3") << endl;  // Should be found in LRU cache
+
+    // Simulate eviction of LRU cache (when the cache is full)
+    cacheManager.put("key4", "value4");
+
+    cout << "Get key1 after eviction: " << cacheManager.get("key1") << endl;  // Should now be in FIFO cache if available
+    cout << "Get key4: " << cacheManager.get("key4") << endl;  // Should be found in LRU cache if still there
+
+    return 0;
+}
+
+```
+---
